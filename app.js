@@ -1,3 +1,6 @@
+const express = require('express');
+const app = express();
+const port = 3030;
 const mongoose = require("mongoose");
 
 async function queryAll(){
@@ -8,19 +11,30 @@ async function queryAll(){
         console.log("Connected To MongoDB Server...");
         
         const MaintenanceSchema = new mongoose.Schema({
+            plate:{type:String},
             name:{type:String},
-            description:{type:String}
+            description:{type:String},
+            date:{type:Date}
         });
 
-        const MaintenanceModel = mongoose.model("maintenancedbs", MaintenanceSchema);
+        const MaintenanceModel = mongoose.models.maintenancedbs || mongoose.model("maintenancedbs", MaintenanceSchema);
 
         let queryAllMaintenance = await MaintenanceModel.find();
-        console.log(queryAllMaintenance);
+        return queryAllMaintenance;
     }
     catch(error){
         console.log(`Error on queryAll ${error}`);
     }
 }
+
+app.get('/maintenances', async (request, response) => {
+    try {
+        let data = await queryAll();
+        response.status(200).json(data);
+    } catch (error) {
+        response.status(500).json({ error: "Internal Server Error" });
+    }
+});
 
 async function newMaintenance(){
     try{
@@ -52,5 +66,7 @@ async function newMaintenance(){
     }
 }
 
-newMaintenance();
+//newMaintenance();
 //queryAll();
+
+app.listen(port, ()=> console.log("Server is running on 127.0.0.1:" + port));
